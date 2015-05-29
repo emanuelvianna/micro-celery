@@ -12,7 +12,7 @@ import settings
 
 
 class Server(object):
-    
+
     def __init__(self, app):
         self.rds = redis.Redis()
         self.app = app
@@ -24,14 +24,17 @@ class Server(object):
         proc.start()
 
     def _listen_queue(self):
-        for raw_task in self.rds.lrange(settings.QUEUE_KEY, 0, -1):
-            self._execute_task(raw_task)
-            self.rds.lpop(settings.QUEUE_KEY)
-        time.sleep(0.5)
+        while True:
+            raw_task = self.rds.lpop(settings.QUEUE_KEY)
+            if raw_task:
+                self._execute_task(raw_task)
+            else:
+                break
 
     def run(self):
         while True:
             self._listen_queue()
+            time.sleep(0.5)
 
 
 def import_app(app_path):
@@ -43,14 +46,12 @@ def import_app(app_path):
 def get_args():
     parser = argparse.ArgumentParser(
         description="Microwave, microsoft, microcelery, stuffs like that")
-    parser.add_argument("-A", "--app-path", required=True, help="Application path"
-    )
+    parser.add_argument("-A", "--app-path", required=True, help="Application path")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_args()
     app = import_app(args.app_path)
-    server = Server(app) 
+    server = Server(app)
     server.run()
-

@@ -4,7 +4,7 @@ import json
 
 
 class Task(object):
-    
+
     def __init__(self, app, func):
         self.app = app
         self.func = func
@@ -15,4 +15,3 @@ class Task(object):
     def delay(self, *args, **kwargs):
         dump = json.dumps((self.func.__name__, args, kwargs))
         self.app.add_task(dump)
-
