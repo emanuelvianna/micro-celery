@@ -24,12 +24,10 @@ class Server(object):
         proc.start()
 
     def _listen_queue(self):
-        while True:
+        raw_task = self.rds.lpop(settings.QUEUE_KEY)
+        while raw_task:
+            self._execute_task(raw_task)
             raw_task = self.rds.lpop(settings.QUEUE_KEY)
-            if raw_task:
-                self._execute_task(raw_task)
-            else:
-                break
 
     def run(self):
         while True:
